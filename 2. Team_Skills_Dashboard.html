@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Talent &amp; Skills Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #f2f4f8;
+  --surface:  #e8eaf0;
+  --card:     #ffffff;
+  --t1:       #1a1b1e;
+  --t2:       #4a4e5a;
+  --t3:       #8a8f9e;
+  --bdr:      rgba(0,0,0,0.08);
+  --bdrm:     rgba(0,0,0,0.15);
+  --blue:     #378ADD;
+  --navy:     #185FA5;
+  --purple:   #534AB7;
+  --teal:     #1D9E75;
+  --amber:    #EF9F27;
+  --r:        8px;
+  --rl:       12px;
+  --font:     'Inter', system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:    #0f1117;
+    --surface:#181b22;
+    --card:  #1c2029;
+    --t1:    #e6e8f0;
+    --t2:    #9499a8;
+    --t3:    #55596a;
+    --bdr:   rgba(255,255,255,0.08);
+    --bdrm:  rgba(255,255,255,0.15);
+  }
+}
+
+body { font-family: var(--font); background: var(--bg); color: var(--t1); line-height: 1.6; padding: 2rem 1.25rem 4rem; }
+.container { max-width: 1100px; margin: 0 auto; }
+
+/* ── Header ── */
+.hdr { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:0.5px solid var(--bdrm); }
+.hdr h1 { font-size:20px; font-weight:600; margin-bottom:4px; }
+.hdr p  { font-size:13px; color:var(--t3); margin-bottom:8px; }
+.anon-badge { display:inline-flex; align-items:center; gap:5px; background:#FAEEDA; color:#633806; font-size:11px; font-weight:500; padding:3px 10px; border-radius:99px; }
+@media (prefers-color-scheme:dark) { .anon-badge { background:#412402; color:#FAC775; } }
+.hdr-date { font-size:12px; color:var(--t3); text-align:right; }
+
+/* ── Panels & layout ── */
+.panel { background:var(--card); border:0.5px solid var(--bdr); border-radius:var(--rl); padding:1.25rem 1.5rem; margin-bottom:1.5rem; }
+.panel-label { font-size:13px; font-weight:500; color:var(--t2); margin-bottom:1rem; }
+.panel-hint  { font-size:11px; font-weight:400; color:var(--t3); margin-left:6px; }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:1.5rem; }
+.row2 .panel { margin-bottom:0; }
+
+/* ── Metric cards ── */
+.mgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:1.5rem; }
+.mc { background:var(--card); border:0.5px solid var(--bdr); border-radius:var(--rl); padding:1rem 1.25rem; }
+.mc-l { font-size:12px; color:var(--t3); margin-bottom:5px; }
+.mc-v { font-size:26px; font-weight:600; line-height:1.15; }
+.mc-s { font-size:11px; color:var(--t3); margin-top:4px; }
+
+/* ── Legend ── */
+.legend { display:flex; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--t2); margin-bottom:.875rem; }
+.ld { width:9px; height:9px; border-radius:2px; display:inline-block; margin-right:4px; vertical-align:middle; }
+
+/* ── Domain bars ── */
+.bar-legend { display:flex; flex-wrap:wrap; gap:14px; font-size:12px; color:var(--t3); margin-bottom:1rem; }
+.dbar { margin-bottom:12px; cursor:pointer; border-radius:var(--r); padding:6px 8px; transition:background .15s; }
+.dbar:hover { background:var(--surface); }
+.dbar-hdr { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+.dbar-name { font-size:13px; color:var(--t2); }
+.dbar-lbl  { font-size:11px; font-weight:500; }
+.dbar-track { height:9px; background:var(--surface); border-radius:5px; overflow:hidden; }
+.dbar-fill  { height:9px; border-radius:5px; transition:width .6s cubic-bezier(.4,0,.2,1); }
+.dbar-hint  { font-size:10px; color:var(--t3); margin-top:4px; }
+
+/* ── Insights ── */
+.insight-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.insight-card { border-radius:var(--rl); padding:1rem 1.1rem; border:0.5px solid var(--bdr); }
+.insight-icon { font-size:18px; margin-bottom:8px; }
+.insight-title { font-size:12px; font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
+.insight-body  { font-size:12px; color:var(--t2); line-height:1.55; }
+
+/* ── Heatmap ── */
+.matrix-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:.75rem; }
+.heat-table  { width:100%; border-collapse:collapse; table-layout:fixed; min-width:660px; }
+.heat-table th, .heat-table td { text-align:center; vertical-align:middle; padding:0; border:1px solid var(--surface); }
+.heat-name-col { width:130px; }
+.heat-dom-th {
+  font-size:10px; font-weight:500; color:var(--t2);
+  padding:8px 4px; cursor:pointer; user-select:none;
+  background:var(--surface); border-bottom:2px solid var(--bdrm);
+  transition:background .15s, color .15s;
+  word-break:break-word; line-height:1.3;
+}
+.heat-dom-th:hover { background:rgba(24,95,165,.12); color:var(--navy); }
+.heat-dom-th.col-active { background:rgba(24,95,165,.18); color:var(--navy); border-bottom-color:var(--navy); }
+.heat-row-name {
+  font-size:12px; font-weight:500; color:var(--t2);
+  text-align:left; padding:8px 10px; cursor:pointer;
+  background:var(--surface); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  transition:color .15s, background .15s;
+}
+.heat-row-name:hover { color:var(--navy); background:rgba(24,95,165,.08); }
+.heat-row-name.row-active { color:var(--navy); background:rgba(24,95,165,.12); }
+.heat-cell {
+  font-size:12px; font-weight:500;
+  height:38px; cursor:pointer;
+  transition:opacity .15s;
+}
+.heat-cell:hover { opacity:.75; }
+.heat-cell.col-active { outline:2px solid rgba(24,95,165,.45); outline-offset:-2px; }
+.heat-legend { display:flex; gap:16px; flex-wrap:wrap; font-size:11px; color:var(--t3); margin-top:8px; }
+.heat-legend-item { display:flex; align-items:center; gap:5px; }
+.heat-swatch { width:16px; height:12px; border-radius:3px; }
+
+/* ── Drill panel ── */
+.drill-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; }
+.close-btn {
+  background:transparent; border:0.5px solid var(--bdrm); border-radius:var(--r);
+  padding:4px 12px; font-size:18px; line-height:1; color:var(--t3);
+  cursor:pointer; font-family:var(--font); transition:background .12s;
+}
+.close-btn:hover { background:var(--surface); }
+.member-view-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; }
+.member-score-list { padding-top:8px; }
+.mscore-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:0.5px solid var(--bdr); font-size:12px; }
+.mscore-row:last-child { border-bottom:none; }
+.mscore-domain { color:var(--t2); }
+.mscore-val { display:flex; align-items:center; gap:6px; }
+.mscore-badge { font-size:10px; font-weight:500; padding:2px 7px; border-radius:99px; }
+.insight-chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:1rem; }
+.chip { font-size:11px; padding:4px 10px; border-radius:99px; border:0.5px solid var(--bdrm); color:var(--t2); background:var(--surface); }
+.chip.strength { background:rgba(29,158,117,.12); color:#085041; border-color:rgba(29,158,117,.3); }
+.chip.gap      { background:rgba(239,159,39,.12); color:#633806; border-color:rgba(239,159,39,.3); }
+@media (prefers-color-scheme:dark) {
+  .chip.strength { background:rgba(29,158,117,.18); color:#9FE1CB; border-color:rgba(29,158,117,.3); }
+  .chip.gap      { background:rgba(239,159,39,.18); color:#FAC775; border-color:rgba(239,159,39,.3); }
+}
+
+/* ── Filter / team cards ── */
+.filter-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.fbtn { background:transparent; border:0.5px solid var(--bdrm); border-radius:var(--r); padding:6px 14px; font-size:12px; font-family:var(--font); color:var(--t2); cursor:pointer; transition:background .12s,color .12s,border-color .12s; }
+.fbtn:hover { background:var(--surface); }
+.fbtn.on { background:rgba(24,95,165,.1); color:var(--navy); border-color:var(--navy); font-weight:500; }
+@media (prefers-color-scheme:dark) { .fbtn.on { background:rgba(55,138,221,.18); color:#85B7EB; border-color:#85B7EB; } }
+.team-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(195px,1fr)); gap:12px; }
+.pc { background:var(--card); border:0.5px solid var(--bdr); border-radius:var(--rl); padding:.875rem 1rem; cursor:pointer; transition:border-color .15s, box-shadow .15s; }
+.pc:hover { border-color:var(--navy); }
+.pc.hidden { display:none; }
+.av  { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; margin-bottom:10px; }
+.pn  { font-size:13px; font-weight:500; margin-bottom:3px; }
+.pr  { font-size:11px; color:var(--t3); margin-bottom:8px; line-height:1.4; }
+.pb  { display:inline-block; font-size:10px; font-weight:500; padding:3px 10px; border-radius:99px; margin-bottom:8px; }
+.sts { display:flex; flex-wrap:wrap; gap:4px; }
+.st  { font-size:10px; padding:2px 7px; border-radius:4px; background:var(--surface); color:var(--t3); }
+.py  { font-size:10px; color:var(--t3); margin-top:8px; }
+
+/* ── Bubble meta ── */
+.bubble-meta { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:12px; font-size:11px; color:var(--t3); }
+
+/* ── Tooltip ── */
+#htip {
+  position:fixed; display:none; pointer-events:none; z-index:9999;
+  background:var(--card); border:0.5px solid var(--bdrm); border-radius:var(--r);
+  padding:7px 11px; font-size:12px; color:var(--t1); line-height:1.5;
+  box-shadow:0 4px 16px rgba(0,0,0,.12); max-width:220px;
+}
+#htip strong { font-weight:500; display:block; margin-bottom:2px; }
+
+/* ── Slide-in animation ── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+.drill-animate { animation:fadeUp .2s ease; }
+
+/* ── Footer ── */
+.footer { margin-top:3rem; padding-top:1.25rem; border-top:0.5px solid var(--bdr); font-size:11px; color:var(--t3); text-align:center; line-height:1.9; }
+
+/* ── Responsive ── */
+@media (max-width:760px) {
+  .mgrid { grid-template-columns:repeat(2,1fr); }
+  .row2  { grid-template-columns:1fr; }
+  .insight-grid { grid-template-columns:1fr; }
+  .member-view-grid { grid-template-columns:1fr; }
+}
+@media (max-width:480px) {
+  body { padding:1rem .75rem 2.5rem; }
+  .mgrid { gap:8px; }
+  .mc-v  { font-size:22px; }
+}
+@media print {
+  body { background:#fff; padding:0; }
+  .fbtn, .close-btn, .filter-row { display:none; }
+  .pc.hidden { display:block !important; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<header class="hdr">
+  <div>
+    <h1>Team talent &amp; skills dashboard</h1>
+    <p>Project team overview &middot; 11 members &middot; 8 skill domains</p>
+    <span class="anon-badge">&#128274; Names anonymized</span>
+  </div>
+  <div class="hdr-date" id="hdrDate"></div>
+</header>
+
+<!-- Metric cards -->
+<div class="mgrid" id="mgrid"></div>
+
+<!-- Donut + Radar -->
+<div class="row2">
+  <div class="panel">
+    <p class="panel-label">Proficiency distribution</p>
+    <div style="position:relative;height:200px">
+      <canvas id="donutC" role="img" aria-label="Donut chart: 1 Expert, 3 Advanced, 6 Intermediate, 1 Beginner">1 Expert · 3 Advanced · 6 Intermediate · 1 Beginner</canvas>
+    </div>
+    <div class="legend" id="donutLeg" style="margin-top:14px;"></div>
+  </div>
+  <div class="panel">
+    <p class="panel-label">Collective skill domain coverage</p>
+    <div style="position:relative;height:200px">
+      <canvas id="radarC" role="img" aria-label="Radar chart showing team average coverage from 0–3 across 8 skill domains">Team skill radar</canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Experience bar -->
+<div class="panel">
+  <p class="panel-label">Years of professional experience per member</p>
+  <div style="position:relative;height:490px">
+    <canvas id="expC" role="img" aria-label="Horizontal bar chart of professional experience per member, color-coded by proficiency">Experience chart</canvas>
+  </div>
+  <div class="legend" id="expLeg" style="margin-top:14px;"></div>
+</div>
+
+<!-- Domain analysis bars — clickable -->
+<div class="panel">
+  <p class="panel-label">Skill domain analysis<span class="panel-hint">— click any bar to drill down</span></p>
+  <div class="bar-legend">
+    <span><span class="ld" style="background:#185FA5"></span>Strength (avg &ge; 1.5 / 3)</span>
+    <span><span class="ld" style="background:#1D9E75"></span>Building (1.0 &ndash; 1.49)</span>
+    <span><span class="ld" style="background:#EF9F27"></span>Development opportunity (below 1.0)</span>
+  </div>
+  <div id="domainBars"></div>
+</div>
+
+<!-- Key insights -->
+<div class="panel">
+  <p class="panel-label">Key insights</p>
+  <div class="insight-grid" id="insightGrid"></div>
+</div>
+
+<!-- Skills matrix heatmap -->
+<div class="panel">
+  <p class="panel-label">Interactive skills matrix<span class="panel-hint">— click a domain column or member name to explore</span></p>
+  <div class="matrix-wrap">
+    <table class="heat-table" id="heatTable" aria-label="Skills matrix showing each team member's score per domain"></table>
+  </div>
+  <div class="heat-legend" id="heatLeg"></div>
+</div>
+
+<!-- Drill-down panel (hidden by default) -->
+<div class="panel" id="drillPanel" style="display:none;">
+  <div class="drill-hdr">
+    <p class="panel-label" id="drillTitle" style="margin:0;"></p>
+    <button class="close-btn" id="drillClose" aria-label="Close drill-down">&#215;</button>
+  </div>
+
+  <!-- Domain view -->
+  <div id="domainView" style="display:none;">
+    <div style="position:relative;height:330px;">
+      <canvas id="domainDrillC" role="img" aria-label="Bar chart of member scores for selected domain">Domain drill-down chart</canvas>
+    </div>
+    <div id="domainInsight" class="insight-chips"></div>
+  </div>
+
+  <!-- Member view -->
+  <div id="memberView" style="display:none;">
+    <div class="member-view-grid">
+      <div>
+        <div style="position:relative;height:270px;">
+          <canvas id="memberRadarC" role="img" aria-label="Radar comparing selected member to team average">Member radar chart</canvas>
+        </div>
+        <div class="legend" id="radarLeg" style="margin-top:12px;justify-content:center;"></div>
+      </div>
+      <div class="member-score-list" id="memberScores"></div>
+    </div>
+    <div id="memberInsight" class="insight-chips" style="margin-top:1rem;"></div>
+  </div>
+</div>
+
+<!-- Bubble chart -->
+<div class="panel">
+  <p class="panel-label">Experience vs. overall skill coverage<span class="panel-hint">— hover for details</span></p>
+  <div style="position:relative;height:420px;">
+    <canvas id="bubbleC" role="img" aria-label="Bubble chart with years of experience on x-axis, average skill score on y-axis, and bubble size representing certifications held">Experience vs skill coverage bubble chart</canvas>
+  </div>
+  <div class="bubble-meta">
+    <span>Bubble size = certifications held &nbsp;&middot;&nbsp; labels = member initials</span>
+    <div class="legend" id="bubbleLeg" style="margin:0;"></div>
+  </div>
+</div>
+
+<!-- Team cards -->
+<div class="panel">
+  <p class="panel-label">Team members<span class="panel-hint">— click a card for individual profile</span></p>
+  <div class="filter-row" id="filterRow"></div>
+  <div class="team-grid" id="teamGrid"></div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>For internal use only &mdash; all names have been anonymized &mdash; data sourced from LinkedIn profiles</p>
+  <p id="footerDate"></p>
+</footer>
+
+</div><!-- /.container -->
+
+<!-- Heatmap tooltip -->
+<div id="htip" role="tooltip"></div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════════ */
+const isDark    = matchMedia('(prefers-color-scheme: dark)').matches;
+const chartTxt  = isDark ? '#9499a8' : '#666c7a';
+const chartGrid = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+const chartBg   = isDark ? '#1c2029' : '#ffffff';
+
+const PROF = {
+  Expert:       { bar:'#534AB7', bb:'#534AB7', bt:'#fff' },
+  Advanced:     { bar:'#378ADD', bb:'#378ADD', bt:'#fff' },
+  Intermediate: { bar:'#1D9E75', bb:'#1D9E75', bt:'#fff' },
+  Beginner:     { bar:'#EF9F27', bb:'#FAEEDA', bt:'#633806' }
+};
+const AVC = ['#534AB7','#378ADD','#1D9E75','#D85A30','#D4537E','#639922','#BA7517','#185FA5','#0F6E56','#854F0B','#993556'];
+const DOMAINS = ['Project Mgmt','Data & BI','Software Dev','Engineering','Innovation','Marketing / CRM','Automation & IoT','Agile & Scrum'];
+const SCORE_LBL = ['No exposure','Familiar','Proficient','Expert'];
+
+// c = certifications count
+const team = [
+  { n:'Maya Torres',    i:'MT', r:'PM & Software Dev Lead',                p:'Expert',       y:11, c:2, s:['Agile PM','Software Engineering','Digital Transformation'], d:[3,2,3,1,2,0,0,3] },
+  { n:'Sofia Brennan',  i:'SB', r:'Electrical & Automation Engineer',      p:'Advanced',     y:7,  c:0, s:['Electrical Engineering','Manufacturing','Project Mgmt'],      d:[2,1,1,3,1,0,2,0] },
+  { n:'Nadia Kowalski', i:'NK', r:'Senior E-CRM & Marketing Specialist',   p:'Advanced',     y:5,  c:0, s:['E-CRM','Digital Marketing','Campaign Management'],             d:[1,2,0,0,1,3,0,0] },
+  { n:'Lucas Chen',     i:'LC', r:'Automation & IIoT Engineer',            p:'Advanced',     y:4,  c:1, s:['IoT / IIoT','PLC & Robotics','Automation'],                    d:[1,2,2,3,1,0,3,1] },
+  { n:'Aryan Mehta',    i:'AM', r:'Research Assistant | Ex-SWE',           p:'Intermediate', y:3,  c:5, s:['Full Stack Dev','Innovation Strategy','Agile'],                d:[1,1,3,1,2,0,0,2] },
+  { n:'Priya Nakamura', i:'PN', r:'Product Manager | Manufacturing',       p:'Intermediate', y:3,  c:2, s:['Product Management','Power BI','Manufacturing Eng'],           d:[2,2,0,2,1,0,0,1] },
+  { n:'Kai Lindberg',   i:'KL', r:'Project Engineer',                      p:'Intermediate', y:3,  c:5, s:['Project Coordination','Process Optimization','SolidWorks'],    d:[2,1,0,2,1,1,0,0] },
+  { n:'Dev Okafor',     i:'DO', r:'System Engineer | Ex-Infosys',          p:'Intermediate', y:2,  c:1, s:['Systems Engineering','Data Analysis','Innovation Mgmt'],       d:[1,2,1,1,2,0,0,0] },
+  { n:'Felix Wagner',   i:'FW', r:'Industrial Engineering Intern',         p:'Intermediate', y:2,  c:0, s:['Industrial Engineering','Time Study','CAD'],                   d:[1,1,0,2,1,0,1,0] },
+  { n:'Rohan Patel',    i:'RP', r:'Jr. Project Engineer | Agile & Azure',  p:'Intermediate', y:2,  c:2, s:['Agile & Scrum','API Development','Azure / .NET'],              d:[2,1,2,0,1,0,0,3] },
+  { n:'Ethan Rossi',    i:'ER', r:'Production Engineer',                   p:'Beginner',     y:1,  c:2, s:['Manufacturing','Scrum / Kanban','SQL'],                         d:[1,2,0,2,0,0,0,1] }
+];
+
+const domainAvgs = DOMAINS.map((_,i) => Math.round(team.reduce((a,p)=>a+p.d[i],0)/team.length*10)/10);
+const memberAvg  = p => Math.round(p.d.reduce((a,b)=>a+b,0)/p.d.length*100)/100;
+
+function hexRgba(hex, a) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function heatColors(score) {
+  const light = [{bg:'#eef1f7',txt:'#9499a8'},{bg:'#C5DDF8',txt:'#0C447C'},{bg:'#378ADD',txt:'#ffffff'},{bg:'#185FA5',txt:'#ffffff'}];
+  const dark  = [{bg:'#1c2029',txt:'#44485a'},{bg:'#0C447C',txt:'#B5D4F4'},{bg:'#185FA5',txt:'#ffffff'},{bg:'#378ADD',txt:'#ffffff'}];
+  return (isDark ? dark : light)[score];
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DATE
+═══════════════════════════════════════════════════════════ */
+const todayStr = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+document.getElementById('hdrDate').textContent   = todayStr;
+document.getElementById('footerDate').textContent = 'Generated ' + todayStr;
+
+/* ═══════════════════════════════════════════════════════════
+   METRIC CARDS
+═══════════════════════════════════════════════════════════ */
+const mgEl = document.getElementById('mgrid');
+[
+  {l:'Team size',           v:'11',      s:'across 8 skill domains'},
+  {l:'Avg. experience',     v:'3.9 yrs', s:'range: 1–11+ years'},
+  {l:'Expert or advanced',  v:'4',       s:'36% of the team'},
+  {l:'Certifications held', v:'20',      s:'across 11 members'}
+].forEach(m => {
+  mgEl.innerHTML += `<div class="mc"><div class="mc-l">${m.l}</div><div class="mc-v">${m.v}</div><div class="mc-s">${m.s}</div></div>`;
+});
+
+/* ═══════════════════════════════════════════════════════════
+   DONUT CHART
+═══════════════════════════════════════════════════════════ */
+new Chart(document.getElementById('donutC'), {
+  type:'doughnut',
+  data:{
+    labels:['Expert','Advanced','Intermediate','Beginner'],
+    datasets:[{data:[1,3,6,1],backgroundColor:['#534AB7','#378ADD','#1D9E75','#EF9F27'],borderWidth:0,hoverOffset:6}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed} member${ctx.parsed>1?'s':''}`}}}}
+});
+const dlEl = document.getElementById('donutLeg');
+[['#534AB7','Expert · 1'],['#378ADD','Advanced · 3'],['#1D9E75','Intermediate · 6'],['#EF9F27','Beginner · 1']].forEach(([c,t])=>{
+  dlEl.innerHTML += `<span><span class="ld" style="background:${c}"></span>${t}</span>`;
+});
+
+/* ═══════════════════════════════════════════════════════════
+   TEAM RADAR (collective)
+═══════════════════════════════════════════════════════════ */
+new Chart(document.getElementById('radarC'), {
+  type:'radar',
+  data:{
+    labels:DOMAINS,
+    datasets:[{label:'Team avg',data:domainAvgs,backgroundColor:hexRgba('#378ADD',.12),borderColor:'#378ADD',borderWidth:2,pointBackgroundColor:'#378ADD',pointBorderColor:chartBg,pointBorderWidth:1.5,pointRadius:4,pointHoverRadius:6}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`avg ${ctx.parsed.r.toFixed(1)} / 3`}}},
+    scales:{r:{min:0,max:3,ticks:{stepSize:1,display:false},grid:{color:chartGrid},angleLines:{color:chartGrid},pointLabels:{font:{size:10,family:"'Inter',sans-serif"},color:chartTxt}}}}
+});
+
+/* ═══════════════════════════════════════════════════════════
+   EXPERIENCE BAR CHART
+═══════════════════════════════════════════════════════════ */
+const sorted = [...team].sort((a,b)=>b.y-a.y);
+new Chart(document.getElementById('expC'), {
+  type:'bar',
+  data:{
+    labels:sorted.map(p=>p.n),
+    datasets:[{data:sorted.map(p=>p.y),backgroundColor:sorted.map(p=>PROF[p.p].bar),borderWidth:0,borderRadius:4}]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`  ${ctx.parsed.x} yr${ctx.parsed.x>1?'s':''} · ${sorted[ctx.dataIndex].p}`}}},
+    scales:{x:{beginAtZero:true,max:13,ticks:{stepSize:2,font:{size:11,family:"'Inter',sans-serif"},color:chartTxt,callback:v=>`${v}y`},grid:{color:chartGrid},title:{display:true,text:'years of professional experience',font:{size:11},color:chartTxt}},y:{ticks:{font:{size:11,family:"'Inter',sans-serif"},color:chartTxt},grid:{display:false}}}}
+});
+const elEl = document.getElementById('expLeg');
+[['#534AB7','Expert'],['#378ADD','Advanced'],['#1D9E75','Intermediate'],['#EF9F27','Beginner']].forEach(([c,l])=>{
+  elEl.innerHTML += `<span><span class="ld" style="background:${c}"></span>${l}</span>`;
+});
+
+/* ═══════════════════════════════════════════════════════════
+   DOMAIN ANALYSIS BARS (clickable)
+═══════════════════════════════════════════════════════════ */
+const dbEl = document.getElementById('domainBars');
+DOMAINS.forEach((name, i) => {
+  const avg   = domainAvgs[i];
+  const pct   = Math.round((avg/3)*100);
+  const color = avg>=1.5?'#185FA5':avg>=1.0?'#1D9E75':'#EF9F27';
+  const label = avg>=1.5?'Strength':avg>=1.0?'Building':'Development opportunity';
+  const profCount = team.filter(p=>p.d[i]>=2).length;
+  const hint  = `${profCount} member${profCount!==1?'s':''} proficient or expert`;
+  dbEl.innerHTML += `
+    <div class="dbar" data-di="${i}" role="button" tabindex="0" aria-label="Drill down into ${name}">
+      <div class="dbar-hdr">
+        <span class="dbar-name">${name}</span>
+        <span class="dbar-lbl" style="color:${color}">${label} · avg ${avg.toFixed(1)}/3</span>
+      </div>
+      <div class="dbar-track"><div class="dbar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="dbar-hint">${hint}</div>
+    </div>`;
+});
+dbEl.addEventListener('click', e => {
+  const bar = e.target.closest('[data-di]');
+  if (bar) showDomainDrill(parseInt(bar.dataset.di));
+});
+dbEl.addEventListener('keydown', e => {
+  if (e.key==='Enter'||e.key===' ') {
+    const bar = e.target.closest('[data-di]');
+    if (bar) showDomainDrill(parseInt(bar.dataset.di));
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   KEY INSIGHTS
+═══════════════════════════════════════════════════════════ */
+(function buildInsights() {
+  // Strongest domain(s)
+  const topDomains = DOMAINS.map((n,i)=>({n,avg:domainAvgs[i]})).filter(d=>d.avg>=1.5).map(d=>d.n);
+  // Concentration: domains where ≤2 members score ≥2
+  const concentrated = DOMAINS.map((n,i)=>{
+    const cnt = team.filter(p=>p.d[i]>=2).length;
+    return {n, cnt, avg:domainAvgs[i]};
+  }).filter(d=>d.cnt<=2 && d.avg>0).sort((a,b)=>a.cnt-b.cnt);
+  // Gaps
+  const gaps = DOMAINS.map((n,i)=>({n,avg:domainAvgs[i]})).filter(d=>d.avg<1.0).sort((a,b)=>a.avg-b.avg);
+
+  const cards = [
+    {
+      bg: isDark?'rgba(24,95,165,.18)':'rgba(24,95,165,.08)',
+      border: isDark?'rgba(24,95,165,.3)':'rgba(24,95,165,.2)',
+      icon: '◆',
+      iconColor: '#185FA5',
+      title: 'Team strengths',
+      titleColor: isDark?'#85B7EB':'#0C447C',
+      body: topDomains.length
+        ? `<strong style="color:var(--t1)">${topDomains.join(', ')}</strong> score above 1.5/3 — these domains have broad coverage across the team.`
+        : 'No domain currently averages above 1.5 — focus on building depth across all areas.'
+    },
+    {
+      bg: isDark?'rgba(239,159,39,.15)':'rgba(239,159,39,.08)',
+      border: isDark?'rgba(239,159,39,.3)':'rgba(239,159,39,.2)',
+      icon: '▲',
+      iconColor: '#BA7517',
+      title: 'Concentration risk',
+      titleColor: isDark?'#FAC775':'#633806',
+      body: concentrated.length
+        ? `<strong style="color:var(--t1)">${concentrated[0].n}</strong>${concentrated[1]?' and <strong style="color:var(--t1)">'+concentrated[1].n+'</strong>':''} expertise is held by only ${concentrated[0].cnt} team member${concentrated[0].cnt!==1?'s':''} — creating a key-person dependency.`
+        : 'Skills are well distributed — no critical concentration risk detected.'
+    },
+    {
+      bg: isDark?'rgba(212,83,126,.15)':'rgba(212,83,126,.07)',
+      border: isDark?'rgba(212,83,126,.3)':'rgba(212,83,126,.18)',
+      icon: '●',
+      iconColor: '#993556',
+      title: 'Development priorities',
+      titleColor: isDark?'#F4C0D1':'#72243E',
+      body: gaps.length
+        ? `<strong style="color:var(--t1)">${gaps.slice(0,2).map(g=>g.n).join(' and ')}</strong> are the lowest-coverage areas. Consider targeted training or new hires to close these gaps.`
+        : 'No critical gaps detected — all domains have at least some coverage.'
+    }
+  ];
+
+  const ig = document.getElementById('insightGrid');
+  cards.forEach(c => {
+    ig.innerHTML += `
+      <div class="insight-card" style="background:${c.bg};border-color:${c.border}">
+        <div class="insight-icon" style="color:${c.iconColor}">${c.icon}</div>
+        <div class="insight-title" style="color:${c.titleColor}">${c.title}</div>
+        <div class="insight-body">${c.body}</div>
+      </div>`;
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   SKILLS HEATMAP
+═══════════════════════════════════════════════════════════ */
+(function buildHeatmap() {
+  const tbl = document.getElementById('heatTable');
+
+  // Header row
+  let hdrHtml = `<thead><tr><th class="heat-name-col" style="background:var(--surface);border:1px solid var(--surface);"></th>`;
+  DOMAINS.forEach((d,i) => {
+    hdrHtml += `<th class="heat-dom-th" data-col="${i}" scope="col">${d}</th>`;
+  });
+  hdrHtml += `</tr></thead>`;
+
+  // Data rows
+  let bodyHtml = '<tbody>';
+  team.forEach((p, ri) => {
+    bodyHtml += `<tr>
+      <th class="heat-row-name" data-row="${ri}" scope="row">${p.n}</th>`;
+    p.d.forEach((score, ci) => {
+      const hc = heatColors(score);
+      bodyHtml += `<td class="heat-cell" data-row="${ri}" data-col="${ci}"
+        style="background:${hc.bg};color:${hc.txt};"
+        title="${p.n} · ${DOMAINS[ci]}: ${score} — ${SCORE_LBL[score]}">${score}</td>`;
+    });
+    bodyHtml += `</tr>`;
+  });
+  bodyHtml += '</tbody>';
+  tbl.innerHTML = hdrHtml + bodyHtml;
+
+  // Click: domain column header
+  tbl.querySelectorAll('.heat-dom-th').forEach(th => {
+    th.addEventListener('click', () => showDomainDrill(parseInt(th.dataset.col)));
+  });
+
+  // Click: member row name
+  tbl.querySelectorAll('.heat-row-name').forEach(th => {
+    th.addEventListener('click', () => showMemberProfile(parseInt(th.dataset.row)));
+  });
+
+  // Click: data cell — domain first if row unselected, member second
+  tbl.querySelectorAll('.heat-cell').forEach(td => {
+    td.addEventListener('click', () => showMemberProfile(parseInt(td.dataset.row)));
+  });
+
+  // Heat legend
+  const legEl = document.getElementById('heatLeg');
+  [0,1,2,3].forEach(s => {
+    const hc = heatColors(s);
+    legEl.innerHTML += `<div class="heat-legend-item">
+      <div class="heat-swatch" style="background:${hc.bg};border:1px solid var(--bdrm);"></div>
+      <span>${s} — ${SCORE_LBL[s]}</span>
+    </div>`;
+  });
+})();
+
+// Heatmap custom tooltip
+(function setupHeatTooltip() {
+  const tip = document.getElementById('htip');
+  document.querySelectorAll('.heat-cell, .heat-row-name, .heat-dom-th').forEach(el => {
+    el.addEventListener('mouseenter', e => {
+      const row = el.dataset.row !== undefined ? parseInt(el.dataset.row) : null;
+      const col = el.dataset.col !== undefined ? parseInt(el.dataset.col) : null;
+      let html = '';
+      if (row !== null && col !== null) {
+        const p = team[row], score = p.d[col];
+        const hc = heatColors(score);
+        html = `<strong>${p.n}</strong>${DOMAINS[col]}<br>
+          Score: <span style="font-weight:500;color:${hc.txt==='#ffffff'?'#185FA5':hc.bg}">${score}/3 &mdash; ${SCORE_LBL[score]}</span>`;
+      } else if (row !== null) {
+        const p = team[row];
+        const avg = memberAvg(p).toFixed(1);
+        html = `<strong>${p.n}</strong>${p.p} · ${p.y} yrs experience<br>Avg domain score: ${avg}/3`;
+      } else if (col !== null) {
+        const avg = domainAvgs[col];
+        const label = avg>=1.5?'Strength':avg>=1.0?'Building':'Development opportunity';
+        html = `<strong>${DOMAINS[col]}</strong>Team avg: ${avg}/3 &mdash; ${label}`;
+      }
+      if (html) { tip.innerHTML = html; tip.style.display = 'block'; }
+    });
+    el.addEventListener('mousemove', e => {
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top  = (e.clientY + 14) + 'px';
+    });
+    el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   DRILL-DOWN PANEL
+═══════════════════════════════════════════════════════════ */
+let drillDomainChart  = null;
+let drillMemberChart  = null;
+let activeDomainIdx   = null;
+let activeMemberIdx   = null;
+
+function openDrill() {
+  const dp = document.getElementById('drillPanel');
+  dp.style.display = 'block';
+  dp.classList.remove('drill-animate');
+  void dp.offsetWidth;
+  dp.classList.add('drill-animate');
+  dp.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function setColumnActive(colIdx) {
+  document.querySelectorAll('.heat-dom-th, .heat-cell').forEach(el => el.classList.remove('col-active'));
+  if (colIdx !== null) {
+    document.querySelectorAll(`[data-col="${colIdx}"]`).forEach(el => el.classList.add('col-active'));
+  }
+  document.querySelectorAll('.heat-row-name').forEach(el => el.classList.remove('row-active'));
+}
+function setRowActive(rowIdx) {
+  document.querySelectorAll('.heat-row-name').forEach(el => el.classList.remove('row-active'));
+  if (rowIdx !== null) {
+    const el = document.querySelector(`.heat-row-name[data-row="${rowIdx}"]`);
+    if (el) el.classList.add('row-active');
+  }
+  document.querySelectorAll('.heat-dom-th, .heat-cell').forEach(el => el.classList.remove('col-active'));
+}
+
+function showDomainDrill(domainIdx) {
+  activeDomainIdx = domainIdx;
+  activeMemberIdx = null;
+  setColumnActive(domainIdx);
+
+  document.getElementById('drillTitle').textContent = `Domain drill-down: ${DOMAINS[domainIdx]}`;
+  document.getElementById('domainView').style.display = 'block';
+  document.getElementById('memberView').style.display = 'none';
+
+  // Sort members by score desc
+  const members = team.map((p,i)=>({...p, idx:i})).sort((a,b)=>b.d[domainIdx]-a.d[domainIdx]);
+
+  const barColors = members.map(p => {
+    const s = p.d[domainIdx];
+    return s===3?'#185FA5':s===2?'#378ADD':s===1?'#EF9F27':isDark?'#2a2e3a':'#e8ecf4';
+  });
+
+  if (drillDomainChart) { drillDomainChart.destroy(); drillDomainChart = null; }
+  drillDomainChart = new Chart(document.getElementById('domainDrillC'), {
+    type: 'bar',
+    data: {
+      labels: members.map(p => p.n),
+      datasets: [{
+        label: DOMAINS[domainIdx],
+        data: members.map(p => p.d[domainIdx]),
+        backgroundColor: barColors,
+        borderWidth: 0,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: {
+          label: ctx => {
+            const s = members[ctx.dataIndex].d[domainIdx];
+            return `  ${s}/3 — ${SCORE_LBL[s]}`;
+          }
+        }}
+      },
+      scales: {
+        x: { min:0, max:3, ticks:{stepSize:1, callback: v=>SCORE_LBL[v]||v, font:{size:11,family:"'Inter',sans-serif"}, color:chartTxt}, grid:{color:chartGrid} },
+        y: { ticks:{font:{size:11,family:"'Inter',sans-serif"}, color:chartTxt}, grid:{display:false} }
+      }
+    }
+  });
+
+  // Insight chips
+  const expertCnt  = team.filter(p=>p.d[domainIdx]===3).length;
+  const profCnt    = team.filter(p=>p.d[domainIdx]===2).length;
+  const familiarCnt= team.filter(p=>p.d[domainIdx]===1).length;
+  const noneCnt    = team.filter(p=>p.d[domainIdx]===0).length;
+  const avg        = domainAvgs[domainIdx];
+  const insEl = document.getElementById('domainInsight');
+  insEl.innerHTML = '';
+  [
+    { label:`avg ${avg.toFixed(1)}/3`, cls:'' },
+    expertCnt  ? { label:`${expertCnt} expert`,    cls:'strength' } : null,
+    profCnt    ? { label:`${profCnt} proficient`,  cls:'strength' } : null,
+    familiarCnt? { label:`${familiarCnt} familiar`,cls:'' }         : null,
+    noneCnt    ? { label:`${noneCnt} no exposure`, cls:'gap' }      : null,
+  ].filter(Boolean).forEach(chip => {
+    insEl.innerHTML += `<span class="chip ${chip.cls}">${chip.label}</span>`;
+  });
+
+  openDrill();
+}
+
+function showMemberProfile(memberIdx) {
+  activeMemberIdx = memberIdx;
+  activeDomainIdx = null;
+  const p = team[memberIdx];
+  setRowActive(memberIdx);
+
+  document.getElementById('drillTitle').textContent = `Member profile: ${p.n}`;
+  document.getElementById('domainView').style.display = 'none';
+  document.getElementById('memberView').style.display = 'block';
+
+  if (drillMemberChart) { drillMemberChart.destroy(); drillMemberChart = null; }
+  drillMemberChart = new Chart(document.getElementById('memberRadarC'), {
+    type: 'radar',
+    data: {
+      labels: DOMAINS,
+      datasets: [
+        {
+          label: p.n,
+          data: p.d,
+          backgroundColor: hexRgba(PROF[p.p].bar, .15),
+          borderColor: PROF[p.p].bar,
+          borderWidth: 2,
+          pointBackgroundColor: PROF[p.p].bar,
+          pointBorderColor: chartBg,
+          pointBorderWidth: 1.5,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        },
+        {
+          label: 'Team average',
+          data: domainAvgs,
+          backgroundColor: 'transparent',
+          borderColor: isDark?'rgba(200,200,200,.35)':'rgba(0,0,0,.2)',
+          borderWidth: 1.5,
+          borderDash: [4,3],
+          pointBackgroundColor: isDark?'rgba(200,200,200,.4)':'rgba(0,0,0,.25)',
+          pointRadius: 3,
+          pointHoverRadius: 5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: {
+          label: ctx => {
+            const val = ctx.parsed.r;
+            return ctx.datasetIndex === 0
+              ? ` ${p.i}: ${val}/3 — ${SCORE_LBL[Math.round(val)]||''}`
+              : ` Team avg: ${val.toFixed(1)}/3`;
+          }
+        }}
+      },
+      scales: {
+        r: {
+          min:0, max:3,
+          ticks:{stepSize:1,display:false},
+          grid:{color:chartGrid},
+          angleLines:{color:chartGrid},
+          pointLabels:{font:{size:10,family:"'Inter',sans-serif"},color:chartTxt}
+        }
+      }
+    }
+  });
+
+  // Radar legend
+  const rlEl = document.getElementById('radarLeg');
+  rlEl.innerHTML = `
+    <span><span class="ld" style="background:${PROF[p.p].bar};"></span>${p.n} (${p.p})</span>
+    <span><span class="ld" style="background:${isDark?'rgba(200,200,200,.4)':'rgba(0,0,0,.2)'};border:1px dashed ${isDark?'#555':'#aaa'};"></span>Team average</span>`;
+
+  // Score table
+  const scEl = document.getElementById('memberScores');
+  scEl.innerHTML = `<div style="font-size:12px;font-weight:500;color:var(--t3);margin-bottom:8px;letter-spacing:.03em;text-transform:uppercase">Domain scores vs team avg</div>`;
+  DOMAINS.forEach((d,i) => {
+    const score = p.d[i], tavg = domainAvgs[i];
+    const hc = heatColors(score);
+    const diff = score - tavg;
+    const diffStr = diff > 0 ? `<span style="color:#1D9E75">+${diff.toFixed(1)}</span>` : diff < 0 ? `<span style="color:#EF9F27">${diff.toFixed(1)}</span>` : `<span style="color:var(--t3)">±0</span>`;
+    scEl.innerHTML += `<div class="mscore-row">
+      <span class="mscore-domain">${d}</span>
+      <span class="mscore-val">
+        <span class="mscore-badge" style="background:${hc.bg};color:${hc.txt==='#ffffff'?heatColors(2).bg:hc.txt};border:1px solid ${hc.bg}">${score} &mdash; ${SCORE_LBL[score]}</span>
+        <span style="font-size:10px;min-width:30px;text-align:right">${diffStr}</span>
+      </span>
+    </div>`;
+  });
+
+  // Insight chips
+  const strengths = DOMAINS.filter((_,i)=>p.d[i]>=2);
+  const gaps      = DOMAINS.filter((_,i)=>p.d[i]===0);
+  const miEl = document.getElementById('memberInsight');
+  miEl.innerHTML = '';
+  if (strengths.length) strengths.forEach(s => { miEl.innerHTML += `<span class="chip strength">&#10003; ${s}</span>`; });
+  if (gaps.length)      gaps.forEach(g      => { miEl.innerHTML += `<span class="chip gap">&#9711; ${g}</span>`; });
+
+  openDrill();
+}
+
+document.getElementById('drillClose').addEventListener('click', () => {
+  document.getElementById('drillPanel').style.display = 'none';
+  setColumnActive(null);
+  setRowActive(null);
+  activeDomainIdx = null;
+  activeMemberIdx = null;
+});
+
+/* ═══════════════════════════════════════════════════════════
+   BUBBLE CHART (Experience vs Avg Score)
+═══════════════════════════════════════════════════════════ */
+(function buildBubble() {
+  const datasets = team.map((p,i) => ({
+    label: p.n,
+    data: [{
+      x: p.y,
+      y: memberAvg(p),
+      r: Math.max(8, p.c * 3.5 + 8)
+    }],
+    backgroundColor: hexRgba(PROF[p.p].bar, 0.82),
+    borderColor:     PROF[p.p].bar,
+    borderWidth:     1.5
+  }));
+
+  new Chart(document.getElementById('bubbleC'), {
+    type: 'bubble',
+    plugins: [ChartDataLabels],
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top:20, right:20, bottom:10, left:10 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: ctx => team[ctx[0].datasetIndex].n,
+            label: ctx => {
+              const p = team[ctx.datasetIndex];
+              return [
+                ` Experience: ${p.y}+ yrs · ${p.p}`,
+                ` Avg skill score: ${memberAvg(p).toFixed(2)}/3`,
+                ` Certifications: ${p.c}`
+              ];
+            }
+          }
+        },
+        datalabels: {
+          formatter: (_, ctx) => team[ctx.datasetIndex].i,
+          color: '#ffffff',
+          font: { size: 9, weight: '600', family: "'Inter', sans-serif" },
+          textAlign: 'center'
+        }
+      },
+      scales: {
+        x: {
+          min: 0, max: 13,
+          title: { display:true, text:'years of professional experience', font:{size:12,family:"'Inter',sans-serif"}, color:chartTxt },
+          ticks: { stepSize:2, font:{size:11,family:"'Inter',sans-serif"}, color:chartTxt, callback:v=>`${v}y` },
+          grid: { color:chartGrid }
+        },
+        y: {
+          min: 0.4, max: 2.1,
+          title: { display:true, text:'average skill domain score (0–3)', font:{size:12,family:"'Inter',sans-serif"}, color:chartTxt },
+          ticks: { stepSize:0.5, font:{size:11,family:"'Inter',sans-serif"}, color:chartTxt, callback:v=>v.toFixed(1) },
+          grid: { color:chartGrid }
+        }
+      }
+    }
+  });
+
+  const blEl = document.getElementById('bubbleLeg');
+  [['#534AB7','Expert'],['#378ADD','Advanced'],['#1D9E75','Intermediate'],['#EF9F27','Beginner']].forEach(([c,l])=>{
+    blEl.innerHTML += `<span><span class="ld" style="background:${c};border-radius:50%;"></span>${l}</span>`;
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   FILTER + TEAM CARDS
+═══════════════════════════════════════════════════════════ */
+const frEl = document.getElementById('filterRow');
+const tgEl = document.getElementById('teamGrid');
+const cnts = {All:11, Expert:1, Advanced:3, Intermediate:6, Beginner:1};
+
+['All','Expert','Advanced','Intermediate','Beginner'].forEach(f => {
+  const btn = document.createElement('button');
+  btn.className   = 'fbtn' + (f==='All'?' on':'');
+  btn.textContent = `${f}  ·  ${cnts[f]}`;
+  btn.onclick = () => {
+    frEl.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    tgEl.querySelectorAll('.pc').forEach(c => {
+      c.classList.toggle('hidden', f!=='All' && c.dataset.p!==f);
+    });
+  };
+  frEl.appendChild(btn);
+});
+
+team.forEach((p, idx) => {
+  const bc     = PROF[p.p];
+  const avClr  = AVC[idx];
+  const bStyle = p.p==='Beginner'
+    ? `background:${bc.bb};color:${bc.bt}`
+    : `background:${bc.bb};color:${bc.bt}`;
+  const tags   = p.s.slice(0,3).map(s=>`<span class="st">${s}</span>`).join('');
+  const card   = document.createElement('div');
+  card.className   = 'pc';
+  card.dataset.p   = p.p;
+  card.setAttribute('role','button');
+  card.setAttribute('tabindex','0');
+  card.setAttribute('aria-label', `View profile for ${p.n}`);
+  card.innerHTML   = `
+    <div class="av" style="background:${hexRgba(avClr,.14)};color:${avClr}">${p.i}</div>
+    <div class="pn">${p.n}</div>
+    <div class="pr">${p.r}</div>
+    <span class="pb" style="${bStyle}">${p.p}</span>
+    <div class="sts">${tags}</div>
+    <div class="py">${p.y}${p.p==='Expert'?'+':''} yr${p.y>1?'s':''} · ${p.c} cert${p.c!==1?'s':''}</div>`;
+  card.onclick  = () => showMemberProfile(idx);
+  card.onkeydown = e => { if (e.key==='Enter'||e.key===' ') showMemberProfile(idx); };
+  tgEl.appendChild(card);
+});
+</script>
+</body>
+</html>
