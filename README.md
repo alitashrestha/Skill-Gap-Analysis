@@ -195,7 +195,7 @@ This repository is for educational purposes as part of the PMI course on Generat
 **Alita Shrestha**  
 Project Manager — Automotive Airbag ECU Functional Safety Project  
 Hochschule Harz (HS Harz) · Department of Automation and Computer Science  
-📧 alitainbox@gmail.com
+📧 shresthaalita@gmail.com
 
 ---
 
